@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vinicius Scarpa — infraestrutura de dados</title>
+<meta name="description" content="Projeto e construo infraestrutura de dados: modelagem, pipeline em dbt, entity resolution em SQL e agentes que consultam o modelo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topo">
+  <p class="nome">Vinicius Scarpa</p>
+  <h1 class="declaracao">Projeto e construo a infraestrutura de dados que times de operação usam para decidir — do modelo de dados ao agente que consulta ele.</h1>
+  <p class="contexto">Agrônomo com MBA em Data Science. Passei quatro anos construindo sozinho toda a infraestrutura de dados e automação de uma operação educacional: modelagem, pipeline, automação e as ferramentas que o time abria todo dia.</p>
+
+  <dl class="ficha">
+    <dt>stack</dt>
+    <dd>Airtable (avançado), SQL/PostgreSQL, dbt Core, Python/Flask, Power BI, Git</dd>
+    <dt>github</dt>
+    <dd><a href="https://github.com/ViniciusVScarpa">github.com/ViniciusVScarpa</a></dd>
+    <dt>linkedin</dt>
+    <dd><a href="https://www.linkedin.com/in/SEU-USUARIO-AQUI">linkedin.com/in/SEU-USUARIO-AQUI</a></dd>
+    <dt>e-mail</dt>
+    <dd><a href="mailto:vinicius.scarpa01@gmail.com">vinicius.scarpa01@gmail.com</a></dd>
+  </dl>
+</header>
+
+<main>
+
+<!-- ============ P_a1 ============ -->
+<article class="projeto">
+  <h2 class="titulo"><span class="ident">P_a1</span> Matching fuzzy de fornecedores</h2>
+
+  <div class="bloco">
+    <p class="rotulo">problema</p>
+    <div class="corpo">
+      <p>Uma empresa mantém financeiro, compras e contratos em sistemas diferentes. O mesmo fornecedor aparece nos três com grafia divergente e sem chave compartilhada. Enquanto ninguém reconcilia, o gasto de um fornecedor fica dividido entre linhas que deveriam ser uma só — e o relatório de gasto por fornecedor está errado sem parecer errado.</p>
+      <p>É o mesmo problema que resolvi no emprego anterior, onde a entidade duplicada era professor, não fornecedor. Lá a solução foi em Python, com Jaro-Winkler e Levenshtein, e chegou a 93,6%. Aqui reconstruí em SQL puro sobre Postgres, com o domínio generalizado — para provar que o raciocínio se sustenta em outra ferramenta e outro domínio.</p>
+      <p class="nota">Base sintética: 500 fornecedores canônicos e 1.497 registros sujos gerados de propósito — abreviação, erro de digitação, acento removido, razão social contra nome fantasia, 15% sem CNPJ. Cada registro sujo guarda de qual canônico veio. Esse ground truth é o que permite medir acurácia, e é justamente o que dado real não entrega.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">decisão</p>
+    <div class="corpo">
+      <p>Comparei três sinais antes de escolher um, medindo cada um contra o ground truth:</p>
+      <table class="dados">
+        <thead>
+          <tr><th scope="col">sinal</th><th scope="col">acurácia</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>trigrama (<code>pg_trgm</code>)</td><td>90,58%</td></tr>
+          <tr><td>Levenshtein cru</td><td>84,90%</td></tr>
+          <tr><td>Levenshtein normalizado</td><td>89,51%</td></tr>
+        </tbody>
+      </table>
+      <p>O caminho óbvio era encadear trigrama e Levenshtein em cascata. Montei a matriz de concordância entre os dois rankings e o teto teórico de uma cascata perfeita ficou em 91,98% — 1,4 ponto acima do trigrama sozinho. Não paga a complexidade, e descartei.</p>
+      <p>O que resolvia de verdade era um sinal de fora do nome. Quando a sujeira abrevia a primeira palavra, <code>Comércio</code> e <code>Construtora</code> colapsam no mesmo <code>C.</code> — a informação que distinguia os dois deixou de existir no texto, e nenhum algoritmo de string recupera isso. CNPJ, quando presente, não é similaridade: é identidade. Tratei como hierarquia, não como mais um score: match exato por CNPJ resolve 1.283 registros; só os 214 sem CNPJ caem no ranking de trigrama.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">como funciona</p>
+    <div class="corpo">
+      <p>Três tabelas. <code>dim_fornecedor</code> guarda a lista canônica, enxuta de propósito — só atributo da entidade, nenhum dado de processo. <code>staging_fornecedor_bruto</code> recebe o dado sujo com tipos permissivos, inclusive CNPJ como texto, porque o papel da camada é aceitar sem rejeitar cedo. <code>fato_matches</code> registra uma linha por par comparado, com o score de cada algoritmo, o status e o método que decidiu — auditável depois.</p>
+      <p>O limiar saiu da distribuição observada, não de chute: entre 0,60 e 0,889 os vencedores certos e errados se sobrepõem. Acima de 0,90, <code>auto_aceito</code>; abaixo, <code>pendente_revisao</code>.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">resultado</p>
+    <div class="corpo">
+      <p class="numero">98,46%</p>
+      <p>de acurácia na estratégia hierárquica, contra 90,58% do melhor algoritmo isolado.</p>
+      <p>O número que importa mais para quem opera é outro: 1.313 dos 1.497 registros (87,7%) saem resolvidos com confiança suficiente para dispensar conferência. Os 184 restantes vão para revisão humana já com candidato sugerido e o score que os classificou. O sistema não tenta acertar sozinho onde a própria confiança é baixa — ele identifica quais casos são esses.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">o que eu faria diferente</p>
+    <div class="corpo">
+      <p>No meu gerador o CNPJ nunca vem corrompido: ou está correto, ou está ausente. Num cenário real ele viria com dígito trocado, e aí a hierarquia deixa de valer — CNPJ vira mais um sinal com peso, combinado aos outros, não uma precedência absoluta. É a limitação que mais afeta o número lá em cima.</p>
+      <p>Jaro-Winkler não existe nativo no Postgres e ficou de fora, documentado como lacuna consciente e não como esquecimento. E comparei os algoritmos em consulta sem persistir <code>score_levenshtein</code> na tabela de fatos — a comparação existe no histórico, não no dado.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">código</p>
+    <div class="corpo">
+      <p><a class="repo" href="https://github.com/ViniciusVScarpa/p_a1_matching_fuzzy_fornecedores">p_a1_matching_fuzzy_fornecedores</a></p>
+    </div>
+  </div>
+</article>
+
+<!-- ============ P_a2 ============ -->
+<article class="projeto">
+  <h2 class="titulo"><span class="ident">P_a2</span> Reconciliação orçado vs. realizado</h2>
+
+  <div class="bloco">
+    <p class="rotulo">problema</p>
+    <div class="corpo">
+      <p>Orçamento é definido uma vez, por categoria e período. O realizado chega aos poucos, de fontes diferentes, com formato inconsistente. Comparar os dois exige reconciliar duas granularidades, e a reconciliação feita à mão quebra a cada mudança de plano de contas ou de formato de origem.</p>
+      <p class="nota">Base sintética, suja por design: três formatos de data convivendo na mesma coluna, grafia de categoria variando entre <code>MKT</code>, <code>Mkt</code> e <code>marketing</code>, e valor numérico chegando como texto.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">decisão</p>
+    <div class="corpo">
+      <p>Arquitetura em três camadas — Bronze, Silver e Gold — em dbt Core sobre Postgres. A Bronze existe para receber dado ruim sem recusar: todas as colunas são <code>text</code>, inclusive as numéricas e as de data. Tipo estrito ali quebraria a carga e esconderia o problema na origem.</p>
+      <p>A separação provou o próprio valor cedo. Na primeira limpeza um valor saiu como <code>42.00000</code> em vez de <code>42000</code>. A causa não estava no dado: o gerador assumiu formato brasileiro, com ponto de milhar, e o locale do Postgres produziu formato americano. Foi uma suposição minha, errada, e ela apareceu visível na fronteira entre camadas em vez de contaminar o número final em silêncio. É esse o argumento para separar Bronze de Silver.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">como funciona</p>
+    <div class="corpo">
+      <p>Dois modelos de staging fazem limpeza e tipagem. O mart agrega o realizado por categoria e mês <em>antes</em> do join — a primeira versão juntava direto por categoria, cada lançamento casava com os seis meses de orçamento daquela categoria e o <code>SUM()</code> inflava sem gerar erro nenhum. Desvio acumulado com <code>SUM() OVER (PARTITION BY categoria ORDER BY ano, mes)</code>, e <code>LEFT JOIN</code> com <code>COALESCE</code> para não descartar mês sem lançamento.</p>
+      <p>Nove testes declarados em <code>schema.yml</code>, todos passando. O <code>accepted_values</code> na categoria existe porque lista fechada é o que pega grafia nova entrando pela Bronze — foi assim que encontrei um caso que o <code>CASE</code> de limpeza não cobria. O modelo de realizado é incremental: lançamento é evento contínuo, orçamento não.</p>
+      <p>Detalhe de infraestrutura, porque isso rodou fora de ambiente de curso: a conexão direta do Supabase resolve por IPv6, que rede residencial brasileira normalmente não roteia — session pooler resolveu. E no conector nativo do Power BI, incluir a porta junto do host no campo Servidor quebra a validação do certificado; só o hostname conecta.</p>
+
+      <!--
+        LINEAGE GRAPH — descomentar depois de salvar o print em assets/p_a2-lineage.png
+      <figure class="figura">
+        <img src="assets/p_a2-lineage.png" alt="Grafo de linhagem do dbt: as duas tabelas Bronze alimentam dois modelos de staging, que alimentam o mart de desvio de orçamento." width="1200" height="600" loading="lazy">
+        <figcaption>Grafo de linhagem gerado pelo próprio dbt a partir das referências entre modelos.</figcaption>
+      </figure>
+      -->
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">resultado</p>
+    <div class="corpo">
+      <p class="numero">2 de 110</p>
+      <p>linhas processadas na segunda execução do modelo incremental. As 110 anteriores não foram recalculadas — é a diferença entre um pipeline que roda e um pipeline que roda em volume.</p>
+      <p>Pipeline versionado de ponta a ponta, dado bruto até camada de consumo, com nove testes automatizados e documentação gerada pelo próprio dbt. O Power BI conecta direto na camada Gold, sem tratamento adicional do lado do BI — que é exatamente o argumento do dbt: transformação feita uma vez, consumível por qualquer ferramenta depois.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">o que eu faria diferente</p>
+    <div class="corpo">
+      <p>O modelo incremental duplica a lógica de conversão de data. O <code>WHERE</code> é avaliado antes do <code>SELECT</code>, então não enxerga a coluna já convertida, e a mesma expressão aparece duas vezes no arquivo. Funciona, mas é a mesma regra em dois lugares — numa versão nova ela vai para uma CTE ou uma macro.</p>
+      <p>Ele também é append-only, sem <code>unique_key</code>: aqui lançamento novo é sempre evento novo, nunca correção de lançamento antigo. Se essa premissa mudar, o modelo duplica em silêncio. E não implementei Row Level Security — o dado é sintético, mas em cenário multi-tenant isso não é extra, é a próxima peça obrigatória.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">código</p>
+    <div class="corpo">
+      <p><a class="repo" href="https://github.com/ViniciusVScarpa/p_a2_reconciliacao_orcamento">p_a2_reconciliacao_orcamento</a></p>
+    </div>
+  </div>
+</article>
+
+</main>
+
+<footer class="rodape">
+  <p>Vinicius Scarpa</p>
+  <p><a href="mailto:vinicius.scarpa01@gmail.com">vinicius.scarpa01@gmail.com</a></p>
+</footer>
+
+</body>
+</html>

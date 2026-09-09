@@ -1,0 +1,307 @@
+/* ---------------------------------------------------------------
+   Vinicius Scarpa — portfólio
+   Uma coluna de conteúdo, uma coluna de rótulos. Sem caixa,
+   sem sombra: hierarquia por espaço e régua de 1px.
+   --------------------------------------------------------------- */
+
+:root {
+  --papel:            #f7f8f8;
+  --tinta:            #14181b;
+  --grafite:          #5a646b;
+  --regua:            #dce1e2;
+  --petroleo:         #10495e;
+  --petroleo-lavado:  #e6edef;
+
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  --col-rotulo: 150px;
+  --gutter: 40px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 24px 96px;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+.topo, main, .rodape {
+  max-width: calc(var(--col-rotulo) + var(--gutter) + 620px);
+  margin-inline: auto;
+}
+
+p { margin: 0 0 1em; }
+p:last-child { margin-bottom: 0; }
+
+a {
+  color: var(--petroleo);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--petroleo);
+  outline-offset: 3px;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--petroleo-lavado);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+}
+
+/* ---------- topo ---------- */
+
+.topo {
+  padding: 88px 0 0;
+}
+
+.nome {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--grafite);
+  margin-bottom: 28px;
+}
+
+.declaracao {
+  font-size: clamp(1.65rem, 4.4vw, 2.55rem);
+  font-weight: 600;
+  line-height: 1.16;
+  letter-spacing: -0.021em;
+  margin: 0 0 32px;
+  max-width: 19ch;
+}
+
+/* o único movimento da página: a régua sob o topo desenha uma vez */
+.topo::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: var(--regua);
+  margin: 56px 0 28px;
+  transform-origin: left center;
+  animation: risca 700ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+@keyframes risca {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.contexto {
+  max-width: 58ch;
+  color: var(--tinta);
+}
+
+/* ---------- ficha do topo ---------- */
+
+.ficha {
+  display: grid;
+  grid-template-columns: var(--col-rotulo) 1fr;
+  gap: 10px var(--gutter);
+  margin: 0;
+}
+
+.ficha dt {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--grafite);
+  line-height: 1.65;
+}
+
+.ficha dd {
+  margin: 0;
+  max-width: 52ch;
+}
+
+/* ---------- projetos ---------- */
+
+.projeto {
+  padding-top: 76px;
+}
+
+.projeto + .projeto {
+  border-top: 1px solid var(--regua);
+  margin-top: 76px;
+  padding-top: 76px;
+}
+
+.titulo {
+  display: grid;
+  grid-template-columns: var(--col-rotulo) 1fr;
+  gap: var(--gutter);
+  align-items: baseline;
+  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+  margin: 0 0 40px;
+}
+
+.ident {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--petroleo);
+  letter-spacing: 0;
+}
+
+.bloco {
+  display: grid;
+  grid-template-columns: var(--col-rotulo) 1fr;
+  gap: var(--gutter);
+  margin-bottom: 34px;
+}
+
+.bloco:last-child { margin-bottom: 0; }
+
+.rotulo {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--grafite);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.corpo { max-width: 62ch; }
+
+/* nota de dado sintético */
+.nota {
+  border-left: 2px solid var(--petroleo-lavado);
+  padding-left: 16px;
+  font-size: 0.9375rem;
+  color: var(--grafite);
+}
+
+/* número de resultado — o único elemento com peso visual do projeto */
+.numero {
+  font-family: var(--mono);
+  font-size: clamp(1.9rem, 5vw, 2.4rem);
+  font-weight: 500;
+  color: var(--petroleo);
+  background: var(--petroleo-lavado);
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 2px;
+  line-height: 1.1;
+  margin-bottom: 0.7em;
+  letter-spacing: -0.01em;
+}
+
+/* tabela de comparação */
+.dados {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 0 1.4em;
+  font-size: 0.9375rem;
+}
+
+.dados th,
+.dados td {
+  text-align: left;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--regua);
+}
+
+.dados th {
+  font-weight: 500;
+  color: var(--grafite);
+  font-size: 0.8125rem;
+}
+
+.dados td + td,
+.dados th + th {
+  text-align: right;
+}
+
+.dados td + td {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.dados code { background: none; padding: 0; }
+
+/* imagem */
+.figura {
+  margin: 28px 0 0;
+}
+
+.figura img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--regua);
+  border-radius: 2px;
+}
+
+.figura figcaption {
+  font-size: 0.875rem;
+  color: var(--grafite);
+  margin-top: 10px;
+}
+
+/* link de repositório */
+.repo {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+}
+
+/* ---------- rodapé ---------- */
+
+.rodape {
+  margin-top: 88px;
+  padding-top: 24px;
+  border-top: 1px solid var(--regua);
+  font-size: 0.9375rem;
+  color: var(--grafite);
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 720px) {
+  body { padding: 0 20px 72px; font-size: 16px; }
+
+  .topo { padding-top: 56px; }
+  .topo::after { margin: 40px 0 24px; }
+
+  .declaracao { max-width: none; }
+
+  .ficha,
+  .titulo,
+  .bloco {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .ficha dt { margin-top: 14px; }
+  .ficha dt:first-of-type { margin-top: 0; }
+
+  .titulo { gap: 4px; }
+  .ident { display: block; }
+
+  .rotulo { margin-bottom: 8px; }
+
+  .projeto { padding-top: 56px; }
+  .projeto + .projeto { margin-top: 56px; padding-top: 56px; }
+}
+
+/* ---------- movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .topo::after { animation: none; }
+  * { transition: none !important; }
+}
