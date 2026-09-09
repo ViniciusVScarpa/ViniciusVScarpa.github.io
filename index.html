@@ -14,7 +14,7 @@
 
 <header class="topo">
   <p class="nome">Vinicius Scarpa</p>
-  <h1 class="declaracao">Projeto e construo a infraestrutura de dados que times de operação usam para decidir — do modelo de dados ao agente que consulta ele.</h1>
+  <h1 class="declaracao">Construo a camada de dados de uma operação: o modelo, o pipeline e a ferramenta que consulta os dois.</h1>
   <p class="contexto">Agrônomo com MBA em Data Science. Passei quatro anos construindo sozinho toda a infraestrutura de dados e automação de uma operação educacional: modelagem, pipeline, automação e as ferramentas que o time abria todo dia.</p>
 
   <dl class="ficha">
@@ -23,7 +23,7 @@
     <dt>github</dt>
     <dd><a href="https://github.com/ViniciusVScarpa">github.com/ViniciusVScarpa</a></dd>
     <dt>linkedin</dt>
-    <dd><a href="https://www.linkedin.com/in/SEU-USUARIO-AQUI">linkedin.com/in/SEU-USUARIO-AQUI</a></dd>
+    <dd><a href="https://www.linkedin.com/in/vscarpa/">linkedin.com/in/vscarpa</a></dd>
     <dt>e-mail</dt>
     <dd><a href="mailto:vinicius.scarpa01@gmail.com">vinicius.scarpa01@gmail.com</a></dd>
   </dl>
@@ -123,13 +123,10 @@
       <p>Nove testes declarados em <code>schema.yml</code>, todos passando. O <code>accepted_values</code> na categoria existe porque lista fechada é o que pega grafia nova entrando pela Bronze — foi assim que encontrei um caso que o <code>CASE</code> de limpeza não cobria. O modelo de realizado é incremental: lançamento é evento contínuo, orçamento não.</p>
       <p>Detalhe de infraestrutura, porque isso rodou fora de ambiente de curso: a conexão direta do Supabase resolve por IPv6, que rede residencial brasileira normalmente não roteia — session pooler resolveu. E no conector nativo do Power BI, incluir a porta junto do host no campo Servidor quebra a validação do certificado; só o hostname conecta.</p>
 
-      <!--
-        LINEAGE GRAPH — descomentar depois de salvar o print em assets/p_a2-lineage.png
       <figure class="figura">
-        <img src="assets/p_a2-lineage.png" alt="Grafo de linhagem do dbt: as duas tabelas Bronze alimentam dois modelos de staging, que alimentam o mart de desvio de orçamento." width="1200" height="600" loading="lazy">
-        <figcaption>Grafo de linhagem gerado pelo próprio dbt a partir das referências entre modelos.</figcaption>
+        <img src="assets/p_a2-lineage.png" alt="Grafo de linhagem do dbt: as duas tabelas Bronze alimentam dois modelos de staging, que convergem no mart de desvio de orçamento." width="1122" height="240" loading="lazy">
+        <figcaption>Grafo de linhagem gerado pelo próprio dbt a partir das referências entre modelos — a ordem de execução não é declarada, é deduzida.</figcaption>
       </figure>
-      -->
     </div>
   </div>
 
