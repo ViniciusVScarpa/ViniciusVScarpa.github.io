@@ -131,6 +131,21 @@ code {
   max-width: 52ch;
 }
 
+/* ---------- título de seção ---------- */
+
+.secao {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--grafite);
+  margin: 72px 0 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--regua);
+}
+
+.secao + .projeto {
+  padding-top: 48px;
+}
+
 /* ---------- projetos ---------- */
 
 .projeto {
