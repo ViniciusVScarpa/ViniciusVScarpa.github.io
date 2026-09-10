@@ -72,6 +72,30 @@ code {
 
 .topo {
   padding: 88px 0 0;
+  position: relative;
+}
+
+/* marca: o único momento gráfico da página, e só no topo */
+.marca {
+  position: absolute;
+  top: 96px;
+  right: -8px;
+  width: 268px;
+  height: auto;
+  pointer-events: none;
+}
+
+.marca .m-links line {
+  stroke: var(--regua);
+  stroke-width: 2;
+}
+
+.marca .m-nos rect {
+  fill: var(--grafite);
+}
+
+.marca .m-nos rect.n-forte {
+  fill: var(--petroleo);
 }
 
 .nome {
@@ -281,9 +305,12 @@ code {
 
 .dados code { background: none; padding: 0; }
 
-/* imagem */
+/* imagem — quebra a coluna de texto e usa a largura inteira */
 .figura {
-  margin: 28px 0 0;
+  margin: 32px 0 0;
+  width: calc(100% + var(--col-rotulo) + var(--gutter));
+  margin-left: calc(-1 * (var(--col-rotulo) + var(--gutter)));
+  max-width: none;
 }
 
 .figura img {
@@ -318,8 +345,14 @@ code {
 
 /* ---------- mobile ---------- */
 
+@media (max-width: 900px) {
+  .marca { display: none; }
+}
+
 @media (max-width: 720px) {
   body { padding: 0 20px 72px; font-size: 16px; }
+
+  .figura { width: 100%; margin-left: 0; }
 
   .topo { padding-top: 56px; }
   .topo::after { margin: 40px 0 24px; }
