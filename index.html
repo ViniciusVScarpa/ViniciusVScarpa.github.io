@@ -53,7 +53,13 @@
 
 <!-- ============ P_a1 ============ -->
 <article class="projeto">
-  <h3 class="titulo"><span class="ident">P_a1</span> Matching fuzzy de fornecedores</h3>
+  <h3 class="titulo">Identificação de fornecedores duplicados</h3>
+  <p class="resumo">O mesmo fornecedor cadastrado de várias formas diferentes, em sistemas que não conversam. O sistema reconhece quais registros são a mesma empresa — e, principalmente, separa os casos em que não dá para ter certeza.</p>
+  <ul class="metricas">
+    <li><span class="valor">98,46%</span>de acerto na identificação</li>
+    <li><span class="valor">87,7%</span>resolvido sem conferência humana</li>
+    <li><span class="valor">1.497</span>cadastros avaliados</li>
+  </ul>
 
   <div class="bloco">
     <p class="rotulo">problema</p>
@@ -79,7 +85,8 @@
         </tbody>
       </table>
       <p>O caminho óbvio era encadear trigrama e Levenshtein em cascata. Montei a matriz de concordância entre os dois rankings e o teto teórico de uma cascata perfeita ficou em 91,98% — 1,4 ponto acima do trigrama sozinho. Não paga a complexidade, e descartei.</p>
-      <p>O que resolvia de verdade era um sinal de fora do nome. Quando a sujeira abrevia a primeira palavra, <code>Comércio</code> e <code>Construtora</code> colapsam no mesmo <code>C.</code> — a informação que distinguia os dois deixou de existir no texto, e nenhum algoritmo de string recupera isso. <strong>CNPJ, quando presente, não é similaridade: é identidade.</strong> Tratei como hierarquia, não como mais um score: match exato por CNPJ resolve 1.283 registros; só os 214 sem CNPJ caem no ranking de trigrama.</p>
+      <p>O que resolvia de verdade era um sinal de fora do nome. Quando a sujeira abrevia a primeira palavra, <code>Comércio</code> e <code>Construtora</code> colapsam no mesmo <code>C.</code> — a informação que distinguia os dois deixou de existir no texto, e nenhum algoritmo de string recupera isso.</p>
+      <p><strong>CNPJ, quando presente, não é similaridade: é identidade.</strong> Tratei como hierarquia, não como mais um score: match exato por CNPJ resolve 1.283 registros, e só os 214 sem CNPJ caem no ranking de trigrama.</p>
     </div>
   </div>
 
@@ -91,11 +98,10 @@
     </div>
   </div>
 
-  <div class="bloco">
+  <div class="bloco resultado">
     <p class="rotulo">resultado</p>
     <div class="corpo">
-      <p class="numero">98,46%</p>
-      <p>de acurácia na estratégia hierárquica, contra 90,58% do melhor algoritmo isolado.</p>
+      <p>A estratégia hierárquica acerta <strong>98,46%</strong> dos casos, contra 90,58% do melhor algoritmo isolado.</p>
       <p>O número que importa mais para quem opera é outro: <strong>1.313 dos 1.497 registros, 87,7%,</strong> saem resolvidos com confiança suficiente para dispensar conferência. Os 184 restantes vão para revisão humana já com candidato sugerido e o score que os classificou. O sistema não tenta acertar sozinho onde a própria confiança é baixa — ele identifica quais casos são esses.</p>
     </div>
   </div>
@@ -118,7 +124,13 @@
 
 <!-- ============ P_a2 ============ -->
 <article class="projeto">
-  <h3 class="titulo"><span class="ident">P_a2</span> Reconciliação orçado vs. realizado</h3>
+  <h3 class="titulo">Orçamento: comparar o previsto com o gasto</h3>
+  <p class="resumo">O orçamento é definido uma vez; o gasto real chega aos poucos, de fontes diferentes e em formatos que não batem. O pipeline junta os dois todo mês e mostra o desvio, sem ninguém refazer planilha.</p>
+  <ul class="metricas">
+    <li><span class="valor">9/9</span>testes automatizados passando</li>
+    <li><span class="valor">2 de 110</span>linhas reprocessadas na carga seguinte</li>
+    <li><span class="valor">3</span>camadas, do dado bruto ao consumo</li>
+  </ul>
 
   <div class="bloco">
     <p class="rotulo">problema</p>
@@ -151,11 +163,10 @@
     </div>
   </div>
 
-  <div class="bloco">
+  <div class="bloco resultado">
     <p class="rotulo">resultado</p>
     <div class="corpo">
-      <p class="numero">2 de 110</p>
-      <p>linhas processadas na segunda execução do modelo incremental. <strong>As 110 anteriores não foram recalculadas</strong> — é a diferença entre um pipeline que roda e um pipeline que roda em volume.</p>
+      <p>Na segunda execução, o modelo incremental processou <strong>2 linhas em vez de 110</strong>. As anteriores não foram recalculadas — é a diferença entre um pipeline que roda e um pipeline que roda em volume.</p>
       <p>Pipeline versionado de ponta a ponta, dado bruto até camada de consumo, com nove testes automatizados e documentação gerada pelo próprio dbt. O Power BI conecta direto na camada Gold, sem tratamento adicional do lado do BI — que é exatamente o argumento do dbt: transformação feita uma vez, consumível por qualquer ferramenta depois.</p>
     </div>
   </div>
@@ -178,7 +189,13 @@
 
 <!-- ============ Coleta ============ -->
 <article class="projeto">
-  <h3 class="titulo"><span class="ident">Coleta</span> Presença e satisfação entrando ao vivo na base</h3>
+  <h3 class="titulo">Presença e satisfação chegando ao vivo na base</h3>
+  <p class="resumo">Quem assistiu a aula e o que essa pessoa achou dela eram duas informações que chegavam tarde, ou não chegavam. Passaram a entrar na base no momento em que acontecem.</p>
+  <ul class="metricas">
+    <li><span class="valor">3.894</span>presenças ligadas à aula correta</li>
+    <li><span class="valor">500 de 4.000</span>votos de um público antes invisível</li>
+    <li><span class="valor">1.233</span>acessos fora de aula preservados como sinal</li>
+  </ul>
 
   <div class="bloco">
     <p class="rotulo">problema</p>
@@ -204,11 +221,10 @@
     </div>
   </div>
 
-  <div class="bloco">
+  <div class="bloco resultado">
     <p class="rotulo">resultado</p>
     <div class="corpo">
-      <p class="numero">3.894</p>
-      <p>registros de presença ligados ao evento e ao curso corretos no backfill do histórico. Outros 1.233 ficaram sem vínculo — e <strong>esses não são erro: são acessos fora do horário de aula</strong>. Em vez de descartar, mantive numa visão separada, porque aluno que entra na plataforma fora da aula é sinal de engajamento, não ruído.</p>
+      <p>O backfill do histórico ligou <strong>3.894 registros de presença</strong> ao evento e ao curso corretos. Outros 1.233 ficaram sem vínculo — e <strong>esses não são erro: são acessos fora do horário de aula</strong>. Em vez de descartar, mantive numa visão separada, porque aluno que entra na plataforma fora da aula é sinal de engajamento, não ruído.</p>
       <p>Do lado da satisfação, a mudança revelou um público que não estava sendo medido: <strong>cerca de 500 dos 4.000 votos</strong> passaram a vir de quem assistiu fora do horário da aula — gente que existia e não aparecia em nenhum número. E esse é piso, não teto: contei como assistente offline apenas quem respondeu dois dias ou mais depois da aula, então quem viu gravado e votou no dia seguinte ficou na conta dos ao vivo.</p>
       <p>É essa tabela que a análise de risco de evasão consome. A pergunta "quem está sumindo" só passou a ter resposta porque a presença virou dado.</p>
     </div>
@@ -232,7 +248,13 @@
 
 <!-- ============ VynIA ============ -->
 <article class="projeto">
-  <h3 class="titulo"><span class="ident">VynIA</span> Agente de análise pedagógica e risco de evasão</h3>
+  <h3 class="titulo">VynIA — perguntas sobre a operação, respondidas na hora</h3>
+  <p class="resumo">Um chat interno onde qualquer pessoa da operação pergunta em português sobre alunos, professores e cursos, e recebe a resposta já cruzada — sem abrir o Airtable e sem entrar na fila do time de dados.</p>
+  <ul class="metricas">
+    <li><span class="valor">6 h/semana</span>devolvidas ao time de produto</li>
+    <li><span class="valor">6</span>páginas de análise sobre 12 tabelas</li>
+    <li><span class="valor">500+</span>professores acompanhados</li>
+  </ul>
 
   <div class="bloco">
     <p class="rotulo">problema</p>
@@ -283,12 +305,12 @@
     </div>
   </div>
 
-  <div class="bloco">
+  <div class="bloco resultado">
     <p class="rotulo">resultado</p>
     <div class="corpo">
-      <p class="numero">6 h/semana</p>
-      <p>eliminadas do rito de um especialista de produto que reunia sete fontes para montar uma apresentação semanal. A mesma pergunta passou a ser respondida na hora, por quem tem a dúvida, sem fila no time de dados. Esse número mede só o fechamento de módulo — as outras páginas substituíram trabalho manual que nunca foi cronometrado, então não entram na conta.</p>
-      <p>E o ranking de professores devolveu um achado sobre o próprio critério. A nota de host, uma das componentes do score composto, <strong>tinha média 9,3 ao longo de cerca de 500 aulas</strong>: variância baixa demais para separar quem quer que seja. Ela não estava ordenando o ranking, estava entrando com peso e sem poder discriminante. O valor real dela é qualitativo — sinaliza problema operacional numa aula específica, como falha de conexão ou material fora do padrão —, e a correção desenhada era tirá-la do agregado e tratá-la como alerta. <strong>Isso só aparece olhando a distribuição, não a média.</strong></p>
+      <p><strong>Seis horas por semana</strong> eliminadas do rito de um especialista de produto que reunia sete fontes para montar uma apresentação semanal. A mesma pergunta passou a ser respondida na hora, por quem tem a dúvida, sem fila no time de dados. Esse número mede só o fechamento de módulo — as outras páginas substituíram trabalho manual que nunca foi cronometrado, então não entram na conta.</p>
+      <p>E o ranking de professores devolveu um achado sobre o próprio critério. A nota de host, uma das componentes do score composto, <strong>tinha média 9,3 ao longo de cerca de 500 aulas</strong>: variância baixa demais para separar quem quer que seja. Ela não estava ordenando o ranking, estava entrando com peso e sem poder discriminante. O valor real dela é qualitativo: sinaliza problema operacional numa aula específica, como falha de conexão ou material fora do padrão.</p>
+      <p>A correção desenhada era tirá-la do agregado e tratá-la como alerta. <strong>Isso só aparece olhando a distribuição, não a média.</strong></p>
     </div>
   </div>
 

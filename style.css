@@ -11,6 +11,7 @@
   --regua:            #dce1e2;
   --petroleo:         #10495e;
   --petroleo-lavado:  #e6edef;
+  --rotulo:           #3c474d;
 
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -120,9 +121,9 @@ code {
 }
 
 .ficha dt {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--grafite);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--rotulo);
   line-height: 1.65;
 }
 
@@ -134,16 +135,67 @@ code {
 /* ---------- título de seção ---------- */
 
 .secao {
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--grafite);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
   margin: 72px 0 0;
-  padding-bottom: 10px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--regua);
 }
 
 .secao + .projeto {
   padding-top: 48px;
+}
+
+
+/* ---------- resumo e métricas de topo ---------- */
+
+.resumo {
+  font-size: 1.125rem;
+  line-height: 1.5;
+  max-width: 60ch;
+  margin: 0 0 28px;
+}
+
+.metricas {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 44px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 20px 32px;
+  border-top: 1px solid var(--regua);
+  border-bottom: 1px solid var(--regua);
+  padding: 22px 0;
+}
+
+.metricas li {
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  color: var(--grafite);
+}
+
+.metricas .valor {
+  display: block;
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--petroleo);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+/* bloco de resultado: o único com fundo */
+.bloco.resultado .corpo {
+  background: var(--petroleo-lavado);
+  padding: 20px 24px;
+  border-radius: 2px;
+  max-width: none;
+}
+
+.bloco.resultado .corpo p {
+  max-width: 58ch;
 }
 
 /* ---------- projetos ---------- */
@@ -159,24 +211,13 @@ code {
 }
 
 .titulo {
-  display: grid;
-  grid-template-columns: var(--col-rotulo) 1fr;
-  gap: var(--gutter);
-  align-items: baseline;
-  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
+  font-size: clamp(1.5rem, 3.2vw, 2rem);
   font-weight: 600;
-  letter-spacing: -0.012em;
-  line-height: 1.25;
-  margin: 0 0 40px;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 0 0 16px;
 }
 
-.ident {
-  font-family: var(--mono);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--petroleo);
-  letter-spacing: 0;
-}
 
 .bloco {
   display: grid;
@@ -188,9 +229,9 @@ code {
 .bloco:last-child { margin-bottom: 0; }
 
 .rotulo {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--grafite);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--rotulo);
   line-height: 1.65;
   margin: 0;
 }
@@ -205,20 +246,6 @@ code {
   color: var(--grafite);
 }
 
-/* número de resultado — o único elemento com peso visual do projeto */
-.numero {
-  font-family: var(--mono);
-  font-size: clamp(1.9rem, 5vw, 2.4rem);
-  font-weight: 500;
-  color: var(--petroleo);
-  background: var(--petroleo-lavado);
-  display: inline-block;
-  padding: 10px 18px;
-  border-radius: 2px;
-  line-height: 1.1;
-  margin-bottom: 0.7em;
-  letter-spacing: -0.01em;
-}
 
 /* tabela de comparação */
 .dados {
@@ -309,8 +336,9 @@ code {
   .ficha dt { margin-top: 14px; }
   .ficha dt:first-of-type { margin-top: 0; }
 
-  .titulo { gap: 4px; }
-  .ident { display: block; }
+  .metricas { grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+  .metricas .valor { font-size: 1.35rem; }
+  .resumo { font-size: 1.0625rem; }
 
   .rotulo { margin-bottom: 8px; }
 
