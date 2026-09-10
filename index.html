@@ -41,7 +41,7 @@
     <p class="rotulo">problema</p>
     <div class="corpo">
       <p>Uma empresa mantém financeiro, compras e contratos em sistemas diferentes. O mesmo fornecedor aparece nos três com grafia divergente e sem chave compartilhada. Enquanto ninguém reconcilia, o gasto de um fornecedor fica dividido entre linhas que deveriam ser uma só — e o relatório de gasto por fornecedor está errado sem parecer errado.</p>
-      <p>É o mesmo problema que resolvi no emprego anterior, onde a entidade duplicada era professor, não fornecedor. Lá a solução foi em Python, com Jaro-Winkler e Levenshtein, e chegou a 93,6%. Aqui reconstruí em SQL puro sobre Postgres, com o domínio generalizado — para provar que o raciocínio se sustenta em outra ferramenta e outro domínio.</p>
+      <p>É o mesmo problema que resolvi no emprego anterior, onde a entidade duplicada era professor, não fornecedor. Lá a solução foi em Python, com Jaro-Winkler e Levenshtein combinados a sobreposição de palavras como critério duplo, dentro de um formulário de cadastro que rodou em produção — e chegou a 93,6%. Aqui reconstruí em SQL puro sobre Postgres, com o domínio generalizado — para provar que o raciocínio se sustenta em outra ferramenta e outro domínio.</p>
       <p class="nota">Base sintética: 500 fornecedores canônicos e 1.497 registros sujos gerados de propósito — abreviação, erro de digitação, acento removido, razão social contra nome fantasia, 15% sem CNPJ. Cada registro sujo guarda de qual canônico veio. Esse ground truth é o que permite medir acurácia, e é justamente o que dado real não entrega.</p>
     </div>
   </div>
@@ -107,6 +107,7 @@
     <div class="corpo">
       <p>Orçamento é definido uma vez, por categoria e período. O realizado chega aos poucos, de fontes diferentes, com formato inconsistente. Comparar os dois exige reconciliar duas granularidades, e a reconciliação feita à mão quebra a cada mudança de plano de contas ou de formato de origem.</p>
       <p class="nota">Base sintética, suja por design: três formatos de data convivendo na mesma coluna, grafia de categoria variando entre <code>MKT</code>, <code>Mkt</code> e <code>marketing</code>, e valor numérico chegando como texto.</p>
+      <p>O problema não é hipotético: no emprego anterior construí a reconciliação de orçado contra realizado por aula, com backfill de 641 registros e rateio proporcional do custo entre cursos que dividem a mesma aula. Aquilo rodou dentro do Airtable, com automação e fórmula. Aqui reconstruí o mesmo raciocínio em dbt e SQL, que é onde ele pertence quando o volume cresce.</p>
     </div>
   </div>
 
@@ -153,6 +154,62 @@
     <p class="rotulo">código</p>
     <div class="corpo">
       <p><a class="repo" href="https://github.com/ViniciusVScarpa/p_a2_reconciliacao_orcamento">p_a2_reconciliacao_orcamento</a></p>
+    </div>
+  </div>
+</article>
+
+<!-- ============ Coleta ============ -->
+<article class="projeto">
+  <h3 class="titulo"><span class="ident">Coleta</span> Presença e satisfação entrando ao vivo na base</h3>
+
+  <div class="bloco">
+    <p class="rotulo">problema</p>
+    <div class="corpo">
+      <p>Duas metades da qualidade de uma aula estavam fora do modelo de dados. A satisfação era coletada por formulário externo, e alguém do time de atendimento levava as respostas para o BI no dia seguinte — o número existia, mas como foto, desligado do evento que o gerou. A presença simplesmente não existia como dado: o aluno assistia na plataforma de ensino e aquilo não virava registro em lugar nenhum da base operacional.</p>
+      <p>Com isso, ninguém conseguia responder a pergunta que importa — quem estava na aula, e o que essas pessoas acharam dela — sem cruzar planilha à mão.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">decisão</p>
+    <div class="corpo">
+      <p><strong>Trazer a coleta para dentro da base, em vez de importar depois.</strong> O formulário de satisfação passou a ser nativo do Airtable, com o identificador do evento pré-preenchido no link: a resposta chega já carregando a que evento e curso pertence, e um script a acopla ao registro correto no instante em que entra. Deixou de existir a etapa de alguém levar dado de um lugar para outro — e com ela, a janela de um dia.</p>
+      <p><strong>Puxar a presença da plataforma de ensino por API.</strong> Um script Python consulta os registros de acesso, roda em GitHub Actions três vezes por semana e grava direto na base. A presença deixou de ser inexistente e virou tabela ligada ao mesmo evento que já tinha a nota.</p>
+      <!-- NÚMERO PENDENTE DE FONTE — descomentar quando confirmado:
+      <p>O efeito no volume foi imediato: as respostas que antes não chegavam eram cerca de 500 em 4.000.</p>
+      -->
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">como funciona</p>
+    <div class="corpo">
+      <p>Do lado da presença, o script busca os acessos ao curso dentro da janela da aula, ordena cronologicamente e marca o primeiro acesso de cada aluno como presença — os seguintes são descartados, senão quem atualiza a página vira três presenças. A gravação vai em lotes de dez, por causa do limite de requisições da API, e o arquivo bruto fica salvo antes da carga, para o dado cru continuar existindo se a transformação estiver errada.</p>
+      <p>Do lado do Airtable, uma automação liga a presença à turma e ao evento. Essa parte não saiu nativa: a ação de busca do Airtable devolve uma lista, e o filtro seguinte só aceita texto, então o vínculo falhava em silêncio. Resolvi com um script que carrega as tabelas em memória e faz o casamento por data e turma — e o mesmo desenho serviu para o backfill do histórico, processando em lotes de cinquenta em vez de um a um.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">resultado</p>
+    <div class="corpo">
+      <p class="numero">3.894</p>
+      <p>registros de presença ligados ao evento e ao curso corretos no backfill do histórico. Outros 1.233 ficaram sem vínculo — e esses não são erro: são acessos fora do horário de aula. Em vez de descartar, mantive numa visão separada, porque aluno que entra na plataforma fora da aula é sinal de engajamento, não ruído.</p>
+      <p>É essa tabela que a análise de risco de evasão consome. A pergunta "quem está sumindo" só passou a ter resposta porque a presença virou dado.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">o que eu faria diferente</p>
+    <div class="corpo">
+      <p>O token da API expira e nada avisa. Aconteceu: o script passou a falhar e o problema só apareceu quando alguém notou a tabela parada. Um pipeline agendado sem alerta de falha é um pipeline que mente por omissão — e é o primeiro item que eu consertaria.</p>
+      <p>Além disso, o vínculo entre a plataforma de ensino e a base é feito pelo nome do curso como texto. Funciona enquanto ninguém renomeia nada, o que é a mesma fragilidade que me mordeu no outro projeto. E a janela de horário é fixa, então turma fora do padrão não seria capturada sem eu mexer no código.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">código</p>
+    <div class="corpo">
+      <p>Repositório privado — o pipeline roda contra a base de produção do meu empregador anterior. Disponível para tela compartilhada em entrevista.</p>
     </div>
   </div>
 </article>
@@ -214,7 +271,8 @@
     <p class="rotulo">resultado</p>
     <div class="corpo">
       <p class="numero">6 h/semana</p>
-      <p>eliminadas do rito de um especialista de produto que reunia sete fontes para montar uma apresentação semanal. A mesma pergunta passou a ser respondida na hora, por quem tem a dúvida, sem fila no time de dados.</p>
+      <p>eliminadas do rito de um especialista de produto que reunia sete fontes para montar uma apresentação semanal. A mesma pergunta passou a ser respondida na hora, por quem tem a dúvida, sem fila no time de dados. Esse número mede só o fechamento de módulo — as outras páginas substituíram trabalho manual que nunca foi cronometrado, então não entram na conta.</p>
+      <p>E o ranking de professores devolveu um achado sobre o próprio critério. A nota de host, uma das componentes do score composto, tinha média 9,3 ao longo de cerca de 500 aulas: variância baixa demais para separar quem quer que seja. Ela não estava ordenando o ranking, estava entrando com peso e sem poder discriminante. O valor real dela é qualitativo — sinaliza problema operacional numa aula específica, como falha de conexão ou material fora do padrão —, e a correção desenhada era tirá-la do agregado e tratá-la como alerta. Isso só aparece olhando a distribuição, não a média.</p>
     </div>
   </div>
 
