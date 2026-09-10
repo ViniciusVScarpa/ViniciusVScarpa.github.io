@@ -40,8 +40,8 @@
   <div class="bloco">
     <p class="rotulo">problema</p>
     <div class="corpo">
-      <p>Uma empresa mantém financeiro, compras e contratos em sistemas diferentes. O mesmo fornecedor aparece nos três com grafia divergente e sem chave compartilhada. Enquanto ninguém reconcilia, o gasto de um fornecedor fica dividido entre linhas que deveriam ser uma só — e o relatório de gasto por fornecedor está errado sem parecer errado.</p>
-      <p>É o mesmo problema que resolvi no emprego anterior, onde a entidade duplicada era professor, não fornecedor. Lá a solução foi em Python, com Jaro-Winkler e Levenshtein combinados a sobreposição de palavras como critério duplo, dentro de um formulário de cadastro que rodou em produção — e chegou a 93,6%. Aqui reconstruí em SQL puro sobre Postgres, com o domínio generalizado — para provar que o raciocínio se sustenta em outra ferramenta e outro domínio.</p>
+      <p>Uma empresa mantém financeiro, compras e contratos em sistemas diferentes. O mesmo fornecedor aparece nos três com grafia divergente e sem chave compartilhada. Enquanto ninguém reconcilia, o gasto de um fornecedor fica dividido entre linhas que deveriam ser uma só — e o relatório de gasto por fornecedor está <strong>errado sem parecer errado</strong>.</p>
+      <p>É o mesmo problema que resolvi no emprego anterior, onde a entidade duplicada era professor, não fornecedor. Lá a solução foi em Python, com Jaro-Winkler e Levenshtein combinados a sobreposição de palavras como critério duplo, dentro de um formulário de cadastro que rodou em produção, e chegou a 93,6%. Aqui reconstruí em SQL puro sobre Postgres, com o domínio generalizado, para provar que o raciocínio se sustenta em outra ferramenta e em outro domínio.</p>
       <p class="nota">Base sintética: 500 fornecedores canônicos e 1.497 registros sujos gerados de propósito — abreviação, erro de digitação, acento removido, razão social contra nome fantasia, 15% sem CNPJ. Cada registro sujo guarda de qual canônico veio. Esse ground truth é o que permite medir acurácia, e é justamente o que dado real não entrega.</p>
     </div>
   </div>
@@ -61,7 +61,7 @@
         </tbody>
       </table>
       <p>O caminho óbvio era encadear trigrama e Levenshtein em cascata. Montei a matriz de concordância entre os dois rankings e o teto teórico de uma cascata perfeita ficou em 91,98% — 1,4 ponto acima do trigrama sozinho. Não paga a complexidade, e descartei.</p>
-      <p>O que resolvia de verdade era um sinal de fora do nome. Quando a sujeira abrevia a primeira palavra, <code>Comércio</code> e <code>Construtora</code> colapsam no mesmo <code>C.</code> — a informação que distinguia os dois deixou de existir no texto, e nenhum algoritmo de string recupera isso. CNPJ, quando presente, não é similaridade: é identidade. Tratei como hierarquia, não como mais um score: match exato por CNPJ resolve 1.283 registros; só os 214 sem CNPJ caem no ranking de trigrama.</p>
+      <p>O que resolvia de verdade era um sinal de fora do nome. Quando a sujeira abrevia a primeira palavra, <code>Comércio</code> e <code>Construtora</code> colapsam no mesmo <code>C.</code> — a informação que distinguia os dois deixou de existir no texto, e nenhum algoritmo de string recupera isso. <strong>CNPJ, quando presente, não é similaridade: é identidade.</strong> Tratei como hierarquia, não como mais um score: match exato por CNPJ resolve 1.283 registros; só os 214 sem CNPJ caem no ranking de trigrama.</p>
     </div>
   </div>
 
@@ -78,14 +78,14 @@
     <div class="corpo">
       <p class="numero">98,46%</p>
       <p>de acurácia na estratégia hierárquica, contra 90,58% do melhor algoritmo isolado.</p>
-      <p>O número que importa mais para quem opera é outro: 1.313 dos 1.497 registros (87,7%) saem resolvidos com confiança suficiente para dispensar conferência. Os 184 restantes vão para revisão humana já com candidato sugerido e o score que os classificou. O sistema não tenta acertar sozinho onde a própria confiança é baixa — ele identifica quais casos são esses.</p>
+      <p>O número que importa mais para quem opera é outro: <strong>1.313 dos 1.497 registros, 87,7%,</strong> saem resolvidos com confiança suficiente para dispensar conferência. Os 184 restantes vão para revisão humana já com candidato sugerido e o score que os classificou. O sistema não tenta acertar sozinho onde a própria confiança é baixa — ele identifica quais casos são esses.</p>
     </div>
   </div>
 
   <div class="bloco">
     <p class="rotulo">o que eu faria diferente</p>
     <div class="corpo">
-      <p>No meu gerador o CNPJ nunca vem corrompido: ou está correto, ou está ausente. Num cenário real ele viria com dígito trocado, e aí a hierarquia deixa de valer — CNPJ vira mais um sinal com peso, combinado aos outros, não uma precedência absoluta. É a limitação que mais afeta o número lá em cima.</p>
+      <p>No meu gerador o CNPJ nunca vem corrompido: ou está correto, ou está ausente. Num cenário real ele viria com dígito trocado, e aí a hierarquia deixa de valer — CNPJ vira mais um sinal com peso, combinado aos outros, não uma precedência absoluta. <strong>É a limitação que mais afeta o número lá em cima.</strong></p>
       <p>Jaro-Winkler não existe nativo no Postgres e ficou de fora, documentado como lacuna consciente e não como esquecimento. E comparei os algoritmos em consulta sem persistir <code>score_levenshtein</code> na tabela de fatos — a comparação existe no histórico, não no dado.</p>
     </div>
   </div>
@@ -106,8 +106,8 @@
     <p class="rotulo">problema</p>
     <div class="corpo">
       <p>Orçamento é definido uma vez, por categoria e período. O realizado chega aos poucos, de fontes diferentes, com formato inconsistente. Comparar os dois exige reconciliar duas granularidades, e a reconciliação feita à mão quebra a cada mudança de plano de contas ou de formato de origem.</p>
+      <p><strong>O problema não é hipotético.</strong> No emprego anterior construí a reconciliação de orçado contra realizado por aula, com backfill de 641 registros e rateio proporcional do custo entre cursos que dividem a mesma aula. Aquilo rodou dentro do Airtable, com automação e fórmula. Aqui reconstruí o mesmo raciocínio em dbt e SQL, que é onde ele pertence quando o volume cresce.</p>
       <p class="nota">Base sintética, suja por design: três formatos de data convivendo na mesma coluna, grafia de categoria variando entre <code>MKT</code>, <code>Mkt</code> e <code>marketing</code>, e valor numérico chegando como texto.</p>
-      <p>O problema não é hipotético: no emprego anterior construí a reconciliação de orçado contra realizado por aula, com backfill de 641 registros e rateio proporcional do custo entre cursos que dividem a mesma aula. Aquilo rodou dentro do Airtable, com automação e fórmula. Aqui reconstruí o mesmo raciocínio em dbt e SQL, que é onde ele pertence quando o volume cresce.</p>
     </div>
   </div>
 
@@ -115,14 +115,14 @@
     <p class="rotulo">decisão</p>
     <div class="corpo">
       <p>Arquitetura em três camadas — Bronze, Silver e Gold — em dbt Core sobre Postgres. A Bronze existe para receber dado ruim sem recusar: todas as colunas são <code>text</code>, inclusive as numéricas e as de data. Tipo estrito ali quebraria a carga e esconderia o problema na origem.</p>
-      <p>A separação provou o próprio valor cedo. Na primeira limpeza um valor saiu como <code>42.00000</code> em vez de <code>42000</code>. A causa não estava no dado: o gerador assumiu formato brasileiro, com ponto de milhar, e o locale do Postgres produziu formato americano. Foi uma suposição minha, errada, e ela apareceu visível na fronteira entre camadas em vez de contaminar o número final em silêncio. É esse o argumento para separar Bronze de Silver.</p>
+      <p>A separação provou o próprio valor cedo. Na primeira limpeza um valor saiu como <code>42.00000</code> em vez de <code>42000</code>. A causa não estava no dado: o gerador assumiu formato brasileiro, com ponto de milhar, e o locale do Postgres produziu formato americano. <strong>Foi uma suposição minha, errada</strong> — e ela apareceu visível na fronteira entre camadas, em vez de contaminar o número final em silêncio. É esse o argumento para separar Bronze de Silver.</p>
     </div>
   </div>
 
   <div class="bloco">
     <p class="rotulo">como funciona</p>
     <div class="corpo">
-      <p>Dois modelos de staging fazem limpeza e tipagem. O mart agrega o realizado por categoria e mês <em>antes</em> do join — a primeira versão juntava direto por categoria, cada lançamento casava com os seis meses de orçamento daquela categoria e o <code>SUM()</code> inflava sem gerar erro nenhum. Desvio acumulado com <code>SUM() OVER (PARTITION BY categoria ORDER BY ano, mes)</code>, e <code>LEFT JOIN</code> com <code>COALESCE</code> para não descartar mês sem lançamento.</p>
+      <p>Dois modelos de staging fazem limpeza e tipagem. O mart agrega o realizado por categoria e mês <em>antes</em> do join — a primeira versão juntava direto por categoria, cada lançamento casava com os seis meses de orçamento daquela categoria e o <code>SUM()</code> <strong>inflava sem gerar erro nenhum</strong>. Desvio acumulado com <code>SUM() OVER (PARTITION BY categoria ORDER BY ano, mes)</code>, e <code>LEFT JOIN</code> com <code>COALESCE</code> para não descartar mês sem lançamento.</p>
       <p>Nove testes declarados em <code>schema.yml</code>, todos passando. O <code>accepted_values</code> na categoria existe porque lista fechada é o que pega grafia nova entrando pela Bronze — foi assim que encontrei um caso que o <code>CASE</code> de limpeza não cobria. O modelo de realizado é incremental: lançamento é evento contínuo, orçamento não.</p>
       <p>Detalhe de infraestrutura, porque isso rodou fora de ambiente de curso: a conexão direta do Supabase resolve por IPv6, que rede residencial brasileira normalmente não roteia — session pooler resolveu. E no conector nativo do Power BI, incluir a porta junto do host no campo Servidor quebra a validação do certificado; só o hostname conecta.</p>
 
@@ -137,7 +137,7 @@
     <p class="rotulo">resultado</p>
     <div class="corpo">
       <p class="numero">2 de 110</p>
-      <p>linhas processadas na segunda execução do modelo incremental. As 110 anteriores não foram recalculadas — é a diferença entre um pipeline que roda e um pipeline que roda em volume.</p>
+      <p>linhas processadas na segunda execução do modelo incremental. <strong>As 110 anteriores não foram recalculadas</strong> — é a diferença entre um pipeline que roda e um pipeline que roda em volume.</p>
       <p>Pipeline versionado de ponta a ponta, dado bruto até camada de consumo, com nove testes automatizados e documentação gerada pelo próprio dbt. O Power BI conecta direto na camada Gold, sem tratamento adicional do lado do BI — que é exatamente o argumento do dbt: transformação feita uma vez, consumível por qualquer ferramenta depois.</p>
     </div>
   </div>
@@ -165,7 +165,7 @@
   <div class="bloco">
     <p class="rotulo">problema</p>
     <div class="corpo">
-      <p>Duas metades da qualidade de uma aula estavam fora do modelo de dados. A satisfação era coletada por formulário externo, e alguém do time de atendimento levava as respostas para o BI no dia seguinte — o número existia, mas como foto, desligado do evento que o gerou. A presença simplesmente não existia como dado: o aluno assistia na plataforma de ensino e aquilo não virava registro em lugar nenhum da base operacional.</p>
+      <p>Duas metades da qualidade de uma aula estavam fora do modelo de dados. A satisfação era coletada por formulário externo, e alguém do time de atendimento levava as respostas para o BI no dia seguinte — o número existia, mas como foto, desligado do evento que o gerou. <strong>A presença simplesmente não existia como dado:</strong> o aluno assistia na plataforma de ensino e aquilo não virava registro em lugar nenhum da base operacional.</p>
       <p>Com isso, ninguém conseguia responder a pergunta que importa — quem estava na aula, e o que essas pessoas acharam dela — sem cruzar planilha à mão.</p>
     </div>
   </div>
@@ -175,9 +175,6 @@
     <div class="corpo">
       <p><strong>Trazer a coleta para dentro da base, em vez de importar depois.</strong> O formulário de satisfação passou a ser nativo do Airtable, com o identificador do evento pré-preenchido no link: a resposta chega já carregando a que evento e curso pertence, e um script a acopla ao registro correto no instante em que entra. Deixou de existir a etapa de alguém levar dado de um lugar para outro — e com ela, a janela de um dia.</p>
       <p><strong>Puxar a presença da plataforma de ensino por API.</strong> Um script Python consulta os registros de acesso, roda em GitHub Actions três vezes por semana e grava direto na base. A presença deixou de ser inexistente e virou tabela ligada ao mesmo evento que já tinha a nota.</p>
-      <!-- NÚMERO PENDENTE DE FONTE — descomentar quando confirmado:
-      <p>O efeito no volume foi imediato: as respostas que antes não chegavam eram cerca de 500 em 4.000.</p>
-      -->
     </div>
   </div>
 
@@ -193,7 +190,8 @@
     <p class="rotulo">resultado</p>
     <div class="corpo">
       <p class="numero">3.894</p>
-      <p>registros de presença ligados ao evento e ao curso corretos no backfill do histórico. Outros 1.233 ficaram sem vínculo — e esses não são erro: são acessos fora do horário de aula. Em vez de descartar, mantive numa visão separada, porque aluno que entra na plataforma fora da aula é sinal de engajamento, não ruído.</p>
+      <p>registros de presença ligados ao evento e ao curso corretos no backfill do histórico. Outros 1.233 ficaram sem vínculo — e <strong>esses não são erro: são acessos fora do horário de aula</strong>. Em vez de descartar, mantive numa visão separada, porque aluno que entra na plataforma fora da aula é sinal de engajamento, não ruído.</p>
+      <p>Do lado da satisfação, a mudança revelou um público que não estava sendo medido: <strong>cerca de 500 dos 4.000 votos</strong> passaram a vir de quem assistiu fora do horário da aula — gente que existia e não aparecia em nenhum número. E esse é piso, não teto: contei como assistente offline apenas quem respondeu dois dias ou mais depois da aula, então quem viu gravado e votou no dia seguinte ficou na conta dos ao vivo.</p>
       <p>É essa tabela que a análise de risco de evasão consome. A pergunta "quem está sumindo" só passou a ter resposta porque a presença virou dado.</p>
     </div>
   </div>
@@ -201,7 +199,7 @@
   <div class="bloco">
     <p class="rotulo">o que eu faria diferente</p>
     <div class="corpo">
-      <p>O token da API expira e nada avisa. Aconteceu: o script passou a falhar e o problema só apareceu quando alguém notou a tabela parada. Um pipeline agendado sem alerta de falha é um pipeline que mente por omissão — e é o primeiro item que eu consertaria.</p>
+      <p>O token da API expira e nada avisa. Aconteceu: o script passou a falhar e o problema só apareceu quando alguém notou a tabela parada. <strong>Um pipeline agendado sem alerta de falha é um pipeline que mente por omissão</strong> — e é o primeiro item que eu consertaria.</p>
       <p>Além disso, o vínculo entre a plataforma de ensino e a base é feito pelo nome do curso como texto. Funciona enquanto ninguém renomeia nada, o que é a mesma fragilidade que me mordeu no outro projeto. E a janela de horário é fixa, então turma fora do padrão não seria capturada sem eu mexer no código.</p>
     </div>
   </div>
@@ -222,7 +220,7 @@
     <p class="rotulo">problema</p>
     <div class="corpo">
       <p>Presença, satisfação, calendário de aulas, avaliação de professor e risco de evasão viviam em tabelas separadas do Airtable, ligadas por registros vinculados. A base era minha: desenhei e mantive as 24 tabelas e 640 colunas que sustentavam a operação. O modelo relacional e a camada analítica eram as duas coisas de que eu cuidava.</p>
-      <p>Só que responder qualquer pergunta operacional continuava exigindo abrir o Airtable, montar filtro à mão e cruzar campos entre tabelas diferentes. O especialista de produto reunia informação de sete lugares e montava uma apresentação por semana — seis horas recorrentes para produzir o que já estava no dado. E toda pergunta fora desse ciclo virava pedido para o time de dados.</p>
+      <p>Só que responder qualquer pergunta operacional continuava exigindo abrir o Airtable, montar filtro à mão e cruzar campos entre tabelas diferentes. O especialista de produto reunia informação de sete lugares e montava uma apresentação por semana — <strong>seis horas recorrentes para produzir o que já estava no dado</strong>. E toda pergunta fora desse ciclo virava pedido para o time de dados.</p>
     </div>
   </div>
 
@@ -245,7 +243,7 @@
     <div class="corpo">
       <p>Seis páginas de análise sobre doze tabelas: comparação de módulos, planejamento de módulos futuros, risco de evasão, CSAT por curso, avaliação de host e ranking de professores. Mais de 500 professores cadastrados e 4.789 respostas de satisfação agregadas na base.</p>
       <p>Dois modelos, para duas profundidades de tarefa: o fallback do chat usa o modelo rápido; a análise textual longa usa o modelo maior, com resposta em streaming. O comportamento do agente é definido num arquivo Markdown lido na inicialização — mudar o que ele sabe não exige tocar em código.</p>
-      <p>Toda interação é registrada com a pergunta, a intenção classificada, se consumiu token e quais tabelas foram fonte. Esse log alimenta um relatório de lacunas de informação: quais perguntas o time faz e a base ainda não responde. Foi a parte mais útil e a que eu menos previ — o uso real mostrando onde o modelo de dados está incompleto.</p>
+      <p>Toda interação é registrada com a pergunta, a intenção classificada, se consumiu token e quais tabelas foram fonte. Esse log alimenta um relatório de lacunas de informação: quais perguntas o time faz e a base ainda não responde. Foi a parte mais útil e a que eu menos previ: <strong>o uso real mostrando onde o modelo de dados está incompleto</strong>.</p>
 
       <figure class="figura">
         <img src="assets/vynia-csat.png" alt="Tabela de satisfação por curso, com CSAT de aula e de professor ponderados, desvio da média, contagem de respostas e taxa de resposta." width="1200" height="777" loading="lazy">
@@ -257,7 +255,7 @@
   <div class="bloco">
     <p class="rotulo">fechamento de módulo</p>
     <div class="corpo">
-      <p>Quando um módulo termina, alguém precisa dizer se ele foi bem — e era essa a apresentação que tomava seis horas por semana. Na VynIA é um botão. O agente lê o histórico do módulo evento a evento, satisfação e densidade de resposta, e devolve uma leitura com sinal por aula, causa provável quando o número cai — o professor, o formato da atividade, ou ruído operacional como falha de conexão — os padrões que atravessam o módulo inteiro e um resumo em tabela.</p>
+      <p>Quando um módulo termina, alguém precisa dizer se ele foi bem — e era essa a apresentação que tomava seis horas por semana. Na VynIA é um botão. O agente lê o histórico do módulo evento a evento, com satisfação e densidade de resposta, e devolve uma leitura com sinal por aula, os padrões que atravessam o módulo inteiro e um resumo em tabela. Quando o número cai, ele aponta a causa provável: o professor, o formato da atividade, ou ruído operacional como uma falha de conexão.</p>
       <p>A leitura sai como HTML autocontido, exportável. O fechamento vira um arquivo que circula por e-mail e continua legível sem o sistema no ar, o que foi o que fez a operação adotar: ninguém precisa abrir a ferramenta para receber a análise.</p>
 
       <figure class="figura">
@@ -272,14 +270,14 @@
     <div class="corpo">
       <p class="numero">6 h/semana</p>
       <p>eliminadas do rito de um especialista de produto que reunia sete fontes para montar uma apresentação semanal. A mesma pergunta passou a ser respondida na hora, por quem tem a dúvida, sem fila no time de dados. Esse número mede só o fechamento de módulo — as outras páginas substituíram trabalho manual que nunca foi cronometrado, então não entram na conta.</p>
-      <p>E o ranking de professores devolveu um achado sobre o próprio critério. A nota de host, uma das componentes do score composto, tinha média 9,3 ao longo de cerca de 500 aulas: variância baixa demais para separar quem quer que seja. Ela não estava ordenando o ranking, estava entrando com peso e sem poder discriminante. O valor real dela é qualitativo — sinaliza problema operacional numa aula específica, como falha de conexão ou material fora do padrão —, e a correção desenhada era tirá-la do agregado e tratá-la como alerta. Isso só aparece olhando a distribuição, não a média.</p>
+      <p>E o ranking de professores devolveu um achado sobre o próprio critério. A nota de host, uma das componentes do score composto, <strong>tinha média 9,3 ao longo de cerca de 500 aulas</strong>: variância baixa demais para separar quem quer que seja. Ela não estava ordenando o ranking, estava entrando com peso e sem poder discriminante. O valor real dela é qualitativo — sinaliza problema operacional numa aula específica, como falha de conexão ou material fora do padrão —, e a correção desenhada era tirá-la do agregado e tratá-la como alerta. <strong>Isso só aparece olhando a distribuição, não a média.</strong></p>
     </div>
   </div>
 
   <div class="bloco">
     <p class="rotulo">o que eu faria diferente</p>
     <div class="corpo">
-      <p>Os nomes de campo do Airtable estão escritos como string literal em dezenas de pontos do código, sem camada de mapeamento entre o schema e a aplicação. Enquanto eu preparava este material, duas páginas quebraram: um campo de data foi renomeado na base e o erro apareceu direto na tela do usuário. É a consequência da decisão de não ter banco próprio, e é o que eu resolveria primeiro — um mapa de campos num lugar só, e falha explícita em vez de silenciosa.</p>
+      <p>Os nomes de campo do Airtable estão escritos como string literal em dezenas de pontos do código, sem camada de mapeamento entre o schema e a aplicação. Enquanto eu preparava este material, <strong>duas páginas quebraram</strong>: um campo de data foi renomeado na base e o erro apareceu direto na tela do usuário. É a consequência da decisão de não ter banco próprio, e é o que eu resolveria primeiro — um mapa de campos num lugar só, e falha explícita em vez de silenciosa.</p>
       <p>O cache também é inconsistente: duas páginas guardam o resultado indefinidamente, todas as outras refazem a consulta sempre, sem estratégia única. Não há teste automatizado nenhum, e praticamente todo o app vive num único arquivo de mais de seis mil linhas. Sobre acesso: numa v2, autenticação de servidor com perfil por sessão.</p>
     </div>
   </div>
