@@ -55,6 +55,10 @@ a:hover { text-decoration-thickness: 2px; }
   outline-offset: 3px;
 }
 
+strong {
+  font-weight: 600;
+}
+
 code {
   font-family: var(--mono);
   font-size: 0.88em;

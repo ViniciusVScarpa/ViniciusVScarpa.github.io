@@ -155,6 +155,70 @@
   </div>
 </article>
 
+<!-- ============ VynIA ============ -->
+<article class="projeto">
+  <h2 class="titulo"><span class="ident">VynIA</span> Agente de análise pedagógica e risco de evasão</h2>
+
+  <div class="bloco">
+    <p class="rotulo">problema</p>
+    <div class="corpo">
+      <p>Presença, satisfação, calendário de aulas, avaliação de professor e risco de evasão viviam em tabelas separadas do Airtable, ligadas por registros vinculados. A base era minha: desenhei e mantive as 24 tabelas e 640 colunas que sustentavam a operação. O modelo relacional e a camada analítica eram as duas coisas de que eu cuidava.</p>
+      <p>Só que responder qualquer pergunta operacional continuava exigindo abrir o Airtable, montar filtro à mão e cruzar campos entre tabelas diferentes. O especialista de produto reunia informação de sete lugares e montava uma apresentação por semana — seis horas recorrentes para produzir o que já estava no dado. E toda pergunta fora desse ciclo virava pedido para o time de dados.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">decisão</p>
+    <div class="corpo">
+      <p><strong>Ler o Airtable direto, sem banco próprio.</strong> A base já era a fonte de verdade da operação e mudava o dia inteiro. Um banco intermediário significaria pipeline de sincronização, e todo pipeline tem uma janela em que o dado exibido está velho. Custou latência — cada página refaz a consulta completa a cada carregamento — e acoplou a aplicação ao schema do Airtable. Foi essa decisão, e o desconforto com ela, que me fez começar a estudar SQL.</p>
+      <p><strong>Rotear por intenção antes de chamar a IA.</strong> A pergunta em linguagem natural passa por um classificador de padrões — 7 categorias, 40 padrões — antes de qualquer chamada de modelo. Se a intenção é reconhecida e os parâmetros saem da própria frase, a resposta vem de consulta direta ao Airtable, formatada em template, sem gastar token. Só o ambíguo cai no modelo. A maior parte da pergunta de rotina não precisa de um LLM, precisa de um filtro.</p>
+      <p><strong>Toda resposta declara a origem do dado.</strong> Tabela, campos e filtro aplicado aparecem junto do resultado. Foi a condição para o time confiar em resposta automática: quem recebe consegue conferir.</p>
+
+      <figure class="figura">
+        <img src="assets/vynia-chat.png" alt="Resposta do agente a uma pergunta sobre turmas, com uma faixa indicando que não houve consumo de token e listando a tabela e os campos consultados." width="758" height="585" loading="lazy">
+        <figcaption>Pergunta de rotina resolvida sem chamar o modelo. A faixa acima do resultado declara a tabela e os campos que originaram a resposta.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">como funciona</p>
+    <div class="corpo">
+      <p>Seis páginas de análise sobre doze tabelas: comparação de módulos, planejamento de módulos futuros, risco de evasão, CSAT por curso, avaliação de host e ranking de professores. Mais de 500 professores cadastrados e 4.789 respostas de satisfação agregadas na base.</p>
+      <p>Dois modelos, para duas profundidades de tarefa: o fallback do chat usa o modelo rápido; a análise textual longa usa o modelo maior, com resposta em streaming. O comportamento do agente é definido num arquivo Markdown lido na inicialização — mudar o que ele sabe não exige tocar em código.</p>
+      <p>Toda interação é registrada com a pergunta, a intenção classificada, se consumiu token e quais tabelas foram fonte. Esse log alimenta um relatório de lacunas de informação: quais perguntas o time faz e a base ainda não responde. Foi a parte mais útil e a que eu menos previ — o uso real mostrando onde o modelo de dados está incompleto.</p>
+
+      <figure class="figura">
+        <img src="assets/vynia-csat.png" alt="Tabela de satisfação por curso, com CSAT de aula e de professor ponderados, desvio da média, contagem de respostas e taxa de resposta." width="1200" height="777" loading="lazy">
+        <figcaption>Satisfação por curso, ponderada por volume de voto, com desvio da média. Os nomes de curso estão cobertos: a operação e os clientes são do empregador anterior.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">resultado</p>
+    <div class="corpo">
+      <p class="numero">6 h/semana</p>
+      <p>eliminadas do rito de um especialista de produto que reunia sete fontes para montar uma apresentação semanal. A mesma pergunta passou a ser respondida na hora, por quem tem a dúvida, sem fila no time de dados.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">o que eu faria diferente</p>
+    <div class="corpo">
+      <p>Os nomes de campo do Airtable estão escritos como string literal em dezenas de pontos do código, sem camada de mapeamento entre o schema e a aplicação. Enquanto eu preparava este material, duas páginas quebraram: um campo de data foi renomeado na base e o erro apareceu direto na tela do usuário. É a consequência da decisão de não ter banco próprio, e é o que eu resolveria primeiro — um mapa de campos num lugar só, e falha explícita em vez de silenciosa.</p>
+      <p>O cache também é inconsistente: duas páginas guardam o resultado indefinidamente, todas as outras refazem a consulta sempre, sem estratégia única. Não há teste automatizado nenhum, e praticamente todo o app vive num único arquivo de mais de seis mil linhas. Sobre acesso: numa v2, autenticação de servidor com perfil por sessão.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">código</p>
+    <div class="corpo">
+      <p>Sistema interno, construído dentro da operação do meu empregador anterior — o código não é público. As telas acima estão sem nome de aluno, de professor e de cliente. A documentação técnica completa fica disponível para tela compartilhada em entrevista.</p>
+    </div>
+  </div>
+</article>
+
 </main>
 
 <footer class="rodape">
