@@ -159,9 +159,9 @@ code {
 /* ---------- título de seção ---------- */
 
 .secao {
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   color: var(--tinta);
   margin: 72px 0 0;
   padding-bottom: 14px;
@@ -235,7 +235,7 @@ code {
 }
 
 .titulo {
-  font-size: clamp(1.5rem, 3.2vw, 2rem);
+  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
   font-weight: 600;
   letter-spacing: -0.018em;
   line-height: 1.2;
@@ -247,7 +247,15 @@ code {
   display: grid;
   grid-template-columns: var(--col-rotulo) 1fr;
   gap: var(--gutter);
-  margin-bottom: 34px;
+  padding-top: 26px;
+  margin-bottom: 30px;
+  border-top: 1px solid var(--regua);
+}
+
+.bloco.resultado {
+  border-top: none;
+  padding-top: 0;
+  margin-bottom: 0;
 }
 
 .bloco:last-child { margin-bottom: 0; }
@@ -331,6 +339,72 @@ code {
 .repo {
   font-family: var(--mono);
   font-size: 0.9375rem;
+}
+
+
+/* ---------- chips de stack ---------- */
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips li {
+  font-size: 0.875rem;
+  line-height: 1.2;
+  color: var(--rotulo);
+  border: 1px solid var(--regua);
+  padding: 6px 10px;
+  background: #fff;
+}
+
+/* ---------- acordeão técnico ---------- */
+
+.detalhe {
+  margin-top: 28px;
+}
+
+.detalhe > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--petroleo);
+  padding: 14px 0;
+  border-top: 1px solid var(--regua);
+  border-bottom: 1px solid var(--regua);
+}
+
+.detalhe > summary::-webkit-details-marker { display: none; }
+
+.detalhe > summary::after {
+  content: "+";
+  font-family: var(--mono);
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--petroleo);
+}
+
+.detalhe[open] > summary::after { content: "\2212"; }
+
+.detalhe > summary:hover { background: var(--petroleo-lavado); }
+
+.detalhe[open] > summary {
+  border-bottom: none;
+  margin-bottom: 8px;
+}
+
+.detalhe .bloco:first-of-type {
+  border-top: none;
+  padding-top: 8px;
 }
 
 /* ---------- rodapé ---------- */
