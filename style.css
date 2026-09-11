@@ -369,6 +369,10 @@ code {
 }
 
 .detalhe > summary {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--papel);
   cursor: pointer;
   list-style: none;
   display: flex;
@@ -398,14 +402,16 @@ code {
 .detalhe > summary:hover { background: var(--petroleo-lavado); }
 
 .detalhe[open] > summary {
-  border-bottom: none;
   margin-bottom: 8px;
 }
 
 .detalhe .bloco:first-of-type {
   border-top: none;
-  padding-top: 8px;
+  padding-top: 18px;
 }
+
+/* a barra grudada não deve cobrir imagem ao rolar */
+.figura img { position: relative; z-index: 0; }
 
 /* ---------- rodapé ---------- */
 
