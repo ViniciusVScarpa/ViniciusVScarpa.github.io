@@ -200,6 +200,69 @@
   </details>
 </article>
 
+<!-- ============ Calendário ============ -->
+<article class="projeto">
+  <h3 class="titulo">Geração automática do calendário de uma turma</h3>
+  <p class="resumo">Toda turma nova precisava ter o calendário inteiro montado à mão: cada aula, cada avaliação e o exame, um por um, desviando de recessos e sem duplicar as aulas que duas turmas assistem juntas. Passou a nascer pronto quando a turma é criada.</p>
+  <ul class="metricas">
+    <li><span class="valor">24</span>turmas geradas sem digitação</li>
+    <li><span class="valor">37</span>eventos por turma, em um clique</li>
+    <li><span class="valor">888</span>inserções manuais que deixaram de existir</li>
+  </ul>
+
+  <div class="bloco resultado">
+    <p class="rotulo">resultado</p>
+    <div class="corpo">
+      <p>Todas as turmas abertas a partir de fevereiro nasceram assim: <strong>24 turmas, sem uma inserção manual</strong>. No processo anterior, seriam até 37 registros criados a dedo por turma — <strong>888 no total</strong>, cada um com data, módulo e turma preenchidos à mão.</p>
+      <p>O ganho que importa não é o tempo, é a consistência. Calendário montado à mão erra em silêncio: uma data em cima de um recesso, um evento duplicado porque ninguém viu que a outra turma já tinha aquela aula. Esses erros só aparecem semanas depois, quando alguém cobra presença de uma aula que não existiu.</p>
+    </div>
+  </div>
+
+  <details class="detalhe">
+    <summary>Ver o raciocínio técnico — problema, decisão, arquitetura e limitações</summary>
+  <div class="bloco">
+    <p class="rotulo">problema</p>
+    <div class="corpo">
+      <p>Uma turma tem módulos; cada módulo tem oito aulas semanais e uma avaliação; no fim vem o exame. Isso dá até 37 eventos no calendário operacional, e cada um deles precisa cair na data certa — pulando semanas de recesso, mantendo sempre o mesmo dia da semana, e sem atropelar o que já existe.</p>
+      <p>O detalhe que transforma isso num problema de modelagem, e não de digitação: <strong>duas turmas de cursos diferentes podem assistir à mesma aula</strong>. Quando os cursos compartilham um módulo, aquela aula é um evento só, com as duas turmas presentes. Criar um evento por turma significa duplicar presença, duplicar pesquisa de satisfação e contar a mesma aula duas vezes em todo relatório dali para frente.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">decisão</p>
+    <div class="corpo">
+      <p><strong>A aula é a entidade; a turma é uma relação.</strong> O evento no calendário não pertence a uma turma — ele existe por si, e as turmas se acoplam a ele. Quando uma turma nova encontra um evento já criado no mesmo dia, do mesmo módulo, ela entra naquele registro em vez de criar outro. É a decisão que define o projeto inteiro, e é de modelagem, não de código.</p>
+      <p><strong>O casamento é feito pelo identificador do módulo, nunca pelo nome.</strong> A primeira versão comparava texto, e quebrou na primeira vez que alguém renomeou um módulo. Nome é rótulo para gente ler; identificador é o que o sistema deve usar.</p>
+      <p><strong>Consulta ao vivo a cada slot, em vez de uma leitura no início.</strong> A plataforma tem uma camada de cache, e ler tudo de uma vez no começo do processo devolvia uma foto velha: duas execuções próximas no tempo criavam eventos duplicados. Trocar por uma consulta fresca a cada data resolveu — custa mais chamadas e elimina a condição de corrida.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">como funciona</p>
+    <div class="corpo">
+      <p>A data de início da turma define o dia da semana de tudo: se a turma começa numa quinta, todo evento cai numa quinta. A partir daí o script percorre as semanas letivas cadastradas, pula as marcadas como inválidas — recesso, feriado, semana de prova — e distribui as oito aulas de cada módulo nas semanas que sobram. A avaliação vai na semana seguinte à última aula, mesmo que essa semana seja inválida, porque avaliação não é aula. O exame fecha o ciclo 42 dias depois.</p>
+      <p>Antes de rodar, uma trava: se a turma já tem aulas vinculadas, o processo aborta. Isso protege contra a execução acidental repetida, que seria o pior desfecho possível — dobrar o calendário de uma turma em produção.</p>
+      <p>E quando encontra dois eventos no mesmo lugar, ele não escolhe um: funde as turmas no registro mais antigo e deixa os identificadores dos duplicados no log, para conferência humana. Fundir é reversível; apagar não é.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">o que eu faria diferente</p>
+    <div class="corpo">
+      <p>A trava de segurança olha para um estado derivado — "esta turma já tem aulas?" — em vez de um registro explícito de que o processo rodou. Isso tem uma consequência real: se alguém desfaz o vínculo em vez de apagar os eventos, sobram registros órfãos que ainda contam como aula, e a trava passa a mentir. <strong>Estado implícito é a fonte da maioria dos bugs que só aparecem meses depois.</strong> Um campo de "processado em" resolveria.</p>
+      <p>As oito aulas por módulo também estão fixas no código. Funciona porque todos os cursos seguem esse formato hoje, mas é uma regra de negócio morando no lugar errado: deveria ser um campo na tabela de módulos, editável por quem cuida do produto, não por quem mexe no script.</p>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <p class="rotulo">código</p>
+    <div class="corpo">
+      <p>Script interno, rodando dentro da base do meu empregador anterior — não é público. Disponível para tela compartilhada em entrevista.</p>
+    </div>
+  </div>
+  </details>
+</article>
+
 <!-- ============ Coleta ============ -->
 <article class="projeto">
   <h3 class="titulo">Presença e satisfação chegando ao vivo na base</h3>
